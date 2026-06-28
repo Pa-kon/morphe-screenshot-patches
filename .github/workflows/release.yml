@@ -36,8 +36,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="v1.0.${{ github.run_number }}"
+          ls -la patches/build/libs/
+          ls -la patches/
           gh release create "$TAG" \
             --title "$TAG" \
             --notes "Automated release from commit ${{ github.sha }}" \
-            patches/build/libs/patches-*.mpp \
-            patches/build/libs/patches-list.json
+            patches/build/libs/*.mpp \
+            patches/patches-list.json
