@@ -5,25 +5,20 @@ on:
   push:
     branches:
       - main
-      - dev
 
 jobs:
   release:
     name: Release
     permissions:
       contents: write
-      packages: write
-      id-token: write
-      attestations: write
+      packages: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -34,26 +29,15 @@ jobs:
       - name: Build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :patches:buildAndroid generatePatchesList clean
+        run: ./gradlew :patches:buildAndroid :patches:generatePatchesList
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 'lts/*'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Release
-        uses: cycjimmy/semantic-release-action@v5
-        id: release
+      - name: Create release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Attest
-        if: steps.release.outputs.new_release_published == 'true'
-        uses: actions/attest-build-provenance@v4
-        with:
-          subject-name: 'Morphe Patches ${{ steps.release.outputs.new_release_git_tag }}'
-          subject-path: patches/build/libs/patches-*.mpp
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v1.0.${{ github.run_number }}"
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes "Automated release from commit ${{ github.sha }}" \
+            patches/build/libs/patches-*.mpp \
+            patches/build/libs/patches-list.json
