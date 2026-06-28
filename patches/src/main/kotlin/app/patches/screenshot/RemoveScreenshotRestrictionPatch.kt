@@ -19,9 +19,7 @@ private val INSTAGRAM = Compatibility(
     appIconColor = 0xFC483C,
     targets = listOf(
         AppTarget(version = "435.0.0.37.76"),
-        // Add newer versions here as they come out — the patch is version-agnostic
-        // because it targets a stable Android framework API, not obfuscated IG code.
-        AppTarget(version = null), // null = accept any future version
+        AppTarget(version = null),
     )
 )
 
@@ -36,20 +34,25 @@ val removeScreenshotRestrictionPatch = bytecodePatch(
     extendWith("extensions/screenshot.mpe")
 
     execute {
-        /*
-         * Strategy: scan every method in the app.
-         * Whenever we find an invoke-virtual targeting:
-         *   android/view/Window;->addFlags(I)V
-         *   android/view/Window;->setFlags(II)V
-         * we replace it with an invoke-static to our extension class.
-         *
-         * The register layout is identical between virtual and static calls:
-         *   virtual {v_window, v_flags}        → static {v_window, v_flags}
-         *   virtual {v_window, v_flags, v_mask} → static {v_window, v_flags, v_mask}
-         * because invoke-virtual already puts the object ref as the first operand.
-         */
-        classes.forEach { classDef ->
-            classDef.methods
+        classDefForEach { classDef ->
+            // Skip our own extension class — it intentionally calls Window.addFlags
+            // and patching it would cause infinite recursion.
+            if (classDef.type == EXTENSION_CLASS) return@classDefForEach
+
+            val hasCalls = classDef.methods.any { method ->
+                method.implementation?.instructions?.any { instruction ->
+                    instruction.opcode == Opcode.INVOKE_VIRTUAL &&
+                        (instruction as? ReferenceInstruction)?.reference?.toString()
+                            ?.let { ref ->
+                                ref == "Landroid/view/Window;->addFlags(I)V" ||
+                                ref == "Landroid/view/Window;->setFlags(II)V"
+                            } ?: false
+                } ?: false
+            }
+
+            if (!hasCalls) return@classDefForEach
+
+            mutableClassDefBy(classDef).methods
                 .filter { it.implementation != null }
                 .forEach { method ->
                     val toReplace = mutableListOf<Pair<Int, String>>()
@@ -82,7 +85,6 @@ val removeScreenshotRestrictionPatch = bytecodePatch(
                         }
                     }
 
-                    // Replace in reverse order so earlier indices stay valid.
                     toReplace.asReversed().forEach { (idx, smali) ->
                         method.replaceInstruction(idx, smali)
                     }
