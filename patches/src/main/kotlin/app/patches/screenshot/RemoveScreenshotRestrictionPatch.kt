@@ -1,9 +1,6 @@
 package app.patches.screenshot
 
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
-import app.morphe.patcher.patch.ApkFileType
-import app.morphe.patcher.patch.AppTarget
-import app.morphe.patcher.patch.Compatibility
 import app.morphe.patcher.patch.bytecodePatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
@@ -12,31 +9,16 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 private const val EXTENSION_CLASS =
     "Lapp/patches/extension/screenshot/ScreenshotRestrictionPatch;"
 
-private val INSTAGRAM = Compatibility(
-    name = "Instagram",
-    packageName = "com.instagram.android",
-    apkFileType = ApkFileType.APKM,
-    appIconColor = 0xFC483C,
-    targets = listOf(
-        AppTarget(version = "435.0.0.37.76"),
-        AppTarget(version = null),
-    )
-)
-
 @Suppress("unused")
 val removeScreenshotRestrictionPatch = bytecodePatch(
     name = "Remove screenshot restriction",
-    description = "Removes FLAG_SECURE from all windows so screenshots and screen recordings work in Instagram.",
+    description = "Removes FLAG_SECURE from all windows so screenshots and screen recordings work in any app.",
     default = true,
 ) {
-    compatibleWith(INSTAGRAM)
-
     extendWith("extensions/screenshot.mpe")
 
     execute {
         classDefForEach { classDef ->
-            // Skip our own extension class — it intentionally calls Window.addFlags
-            // and patching it would cause infinite recursion.
             if (classDef.type == EXTENSION_CLASS) return@classDefForEach
 
             val hasCalls = classDef.methods.any { method ->

@@ -2,8 +2,8 @@ group = "app.patches.screenshot"
 
 patches {
     about {
-        name = "Screenshot Patches"
-        description = "Removes screenshot restrictions from Instagram"
+        name = "Pakon Patches"
+        description = "Personal Morphe patches. Universal: removes screenshot restrictions from any app."
         source = "https://github.com/Pa-kon/morphe-screenshot-patches"
         author = "Pa-kon"
         contact = ""

@@ -72,7 +72,7 @@ jobs:
           cat > patches-bundle.json <<EOF
           {
             "created_at": "$CREATED_AT",
-            "description": "Release $TAG — Removes screenshot restriction from Instagram.",
+            "description": "Pakon Patches $TAG. Personal experimental patches — use at your own risk. Universal: removes screenshot restrictions from any app.",
             "download_url": "$DOWNLOAD_URL",
             "signature_download_url": "",
             "version": "$VERSION"
