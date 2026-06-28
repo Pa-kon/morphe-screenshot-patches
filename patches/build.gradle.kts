@@ -4,8 +4,8 @@ patches {
     about {
         name = "Screenshot Patches"
         description = "Removes screenshot restrictions from Instagram"
-        source = "https://github.com/YOUR_USERNAME/morphe-screenshot-patches"
-        author = "YOUR_NAME"
+        source = "https://github.com/Pa-kon/morphe-screenshot-patches"
+        author = "Pa-kon"
         contact = ""
         website = ""
         license = "GPLv3"
