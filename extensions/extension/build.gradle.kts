@@ -1,7 +1,7 @@
 extension {
-    name = "extensions/extension.mpe"
+    name = "extensions/screenshot.mpe"
 }
 
 android {
-    namespace = "app.template.extension"
+    namespace = "app.patches.extension.screenshot"
 }
