@@ -36,10 +36,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="v1.0.${{ github.run_number }}"
-          ls -la patches/build/libs/
-          ls -la patches/
+          MPP=$(ls patches/build/libs/*.mpp | grep -v -- '-sources.mpp' | grep -v -- '-javadoc.mpp' | head -n1)
+          echo "Releasing: $MPP and patches-list.json"
           gh release create "$TAG" \
             --title "$TAG" \
             --notes "Automated release from commit ${{ github.sha }}" \
-            patches/build/libs/*.mpp \
-            patches/patches-list.json
+            "$MPP" \
+            patches-list.json
